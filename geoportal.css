@@ -1,0 +1,134 @@
+html, body, #map {
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    }
+
+    body {
+    display: flex;
+    flex-direction: row;
+    }
+    
+    .container {
+        position: relative;
+        width: 78%;
+        height: 100%;
+    }
+
+    .header {
+        position: absolute;
+        top: 0;
+        left: 50%;
+        transform: translateX(-50%);
+        padding: 10px;
+        background-color: transparent;
+        z-index: 1000; 
+        color: #493D26;
+        font-family: 'Copperplate Gothic';
+        width: 100%;
+        text-align: center;
+        height: 0;
+    }
+    .sidebar{
+        background-color: #EBE8CF;
+        width: 22%;
+        display: flex;
+        align-items: flex-start;
+        border: 2px solid #493D26;
+        border-radius: 3px;
+        flex-direction: column;
+        padding: 12px ;
+    }
+    .sidebar-title {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        width: 100%;
+    }
+    .sidebar-header {
+        font-family: 'Copperplate Gothic';
+        margin: 10px 15px;
+        font-size: 18px;
+        text-transform: uppercase;
+        color: #493D26;
+    }
+    .sidebar-content {
+        padding-top: 0;
+        width: 100%;
+        height: 100%;
+    }
+    .icon1 {
+        width: 30px;
+        height: 30px;
+        margin: 10px 15px;
+        color: #493D26;
+    }
+    .sidebar-legend{
+        display: grid;
+        position: relative;
+        grid-template-columns: repeat(2, 1fr);
+        row-gap: 10px;
+        padding: 60px 0;
+        opacity: 1;
+        z-index: 1000;
+        height: 100px;
+        margin-bottom: 15px;
+    }
+    .img-background {
+        position: absolute;
+        opacity: 0.6;
+        width: 100%;
+        height: 100%;
+    }
+    .legend-img {
+        width: 30px;
+        height: 37px;
+        padding-right: 7px;
+    }
+    p {
+        font-family: 'Palatino Linotype';
+        font-size: 13px;
+    }
+    .legend-item {
+        display: flex;
+        justify-content: flex-start;
+        align-items: center;
+        position: relative;
+        
+    }
+    .hyphen {
+        padding-right: 8px;
+        font-size: 15px;
+    }
+    .sidebar-legend  p {
+        font-family: 'Copperplate Gothic' ;
+        font-weight: 500;
+        color:#493D26 ;
+        font-size: 12px;
+    }
+   
+    .sidebar-links p {
+        margin: 9px;
+        text-align: center;
+    }
+    .sidebar-links div {
+        display: flex;
+        justify-content: center;
+    }
+    .sidebar-button {
+        padding: 6px 0;
+        margin-bottom: 5px;
+        font-family: 'Copperplate Gothic';
+        background-color: #dcccac;
+        border-radius: 0;
+        border: 2px solid 
+        #bc946c ;
+        width: 150px;
+    }
+    .sidebar-button:hover {
+        cursor: pointer;
+        background-color:
+        #bc946c ;
+        transition: 0.7s;
+    }
+    

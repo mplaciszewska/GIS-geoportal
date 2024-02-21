@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Geoportal - Piracy Incidents 2023</title>
+    <link rel="stylesheet" href="geoportal.css">
+    <meta charset="UTF-8">
+    <link rel="icon" type="image/ico" href="leaflet/images/steering-wheel.png"/>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Piracy incidents map 2023</h1>
+        </div>
+        <div id="map"></div>
+    </div>
+    <div class="sidebar">
+        <div class = "sidebar-title">
+            <h2 class="sidebar-header">legend</h2>
+            <img class="icon1" src="leaflet/images/steering-wheel.png">
+        </div>
+        <div class="sidebar-content">
+            <div class="sidebar-description">
+                <p>This is a map that shows all piracy incidents and attacks in 2023. 
+                    The data is collected from reports to the IMB (International Maritime Bureau) Piracy Reporting Centre. 
+                    The coordinates may not be exact as in some cases only rough data is available.</p>
+            </div>
+            <div class="sidebar-legend">
+                <img class="img-background" src = "leaflet/images/scroll.png">
+                <div class="legend-item">
+                    <img class="legend-img" src="leaflet/images/boarded-marker-2.png" alt="Boarded Ship Marker">
+                    <p class="hyphen">-</p>
+                    <p>Boarded ships</p>
+                </div>
+                <div class="legend-item">
+                    <img class="legend-img" src="leaflet/images/hijacked-marker-2.png" alt="Hijacked Ship Marker">
+                    <p class="hyphen">-</p>
+                    <p>Hijacked ships</p>
+                </div>
+                <div class="legend-item">
+                    <img class="legend-img" src="leaflet/images/attempted-marker-2.png" alt="Attempted Attack Marker">
+                    <p class="hyphen">-</p>
+                    <p>Attempted attacks</p>
+                </div>
+                <div class="legend-item">
+                    <img class="legend-img" src="leaflet/images/firedupon-marker-2.png" alt="Fired Upon Marker">
+                    <p class="hyphen">-</p>
+                    <p>Fired upon ships</p>
+                </div>
+            </div>
+            <div class = "sidebar-links">
+                <p> To download data, click the button below: </p>
+                <div><a href="dane1.xlsx" download><button class="sidebar-button">Download Data</button></a></div>
+                <p>To visit the IMB site and learn more, click the button below: </p>
+                <div><a href="https://www.icc-ccs.org/icc/imb" target="_blank"><button class="sidebar-button">IMB site</button></a></div>
+            </div>
+        </div>
+    </div>
+
+    <script src="leaflet/leaflet.js"></script>
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.17.1/xlsx.full.min.js"></script>
+    <link rel="stylesheet" href="leaflet/leaflet.css">
+    <link rel="stylesheet" href="Leaflet.ExtraMarkers-master/dist/css/leaflet.extra-markers.min.css">
+    <script src="Leaflet.ExtraMarkers-master/dist/js/leaflet.extra-markers.min.js"></script>
+    <script>
+        var mymap = L.map('map',{maxZoom:20}).setView([12.02, 20.19], 2); // metoda ustawienia zoomu
+        
+        var terrainBaseLayer = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Terrain_Base/MapServer/tile/{z}/{y}/{x}', {
+            attribution: '© ESRI',
+            maxZoom: 55
+        }).addTo(mymap);
+
+        var textLayer = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Reference_Overlay/MapServer/tile/{z}/{y}/{x}', {
+            attribution: '© ESRI',
+            maxZoom: 55
+        }).addTo(mymap);
+
+        var boardedLayer = L.layerGroup().addTo(mymap);
+        var hijackedLayer = L.layerGroup().addTo(mymap);
+        var attemptedLayer = L.layerGroup().addTo(mymap);
+        var firedUponLayer = L.layerGroup().addTo(mymap);
+
+        var baseLayers = {
+            "ESRI Terrain Base Layer": terrainBaseLayer,
+        };
+
+        var overlays = {
+            "Borders and names": textLayer,
+            "Boarded ships": boardedLayer,
+            "Hijacked ships": hijackedLayer,
+            "Attempted attacks": attemptedLayer,
+            "Fired upon ships": firedUponLayer,
+        };
+
+        L.control.layers(baseLayers, overlays).addTo(mymap);
+        L.control.scale().addTo(mymap);
+        
+        function loadExcelFile() {
+            var filePath = 'dane1.xlsx';
+            var xhr = new XMLHttpRequest();
+            xhr.open('GET', filePath, true);
+            xhr.responseType = 'arraybuffer';
+
+            xhr.onload = function (e) {
+                var data = new Uint8Array(xhr.response);
+                var workbook = XLSX.read(data, { type: 'array' });
+
+                var firstSheetName = workbook.SheetNames[0];
+                var worksheet = workbook.Sheets[firstSheetName];
+
+                var coordinatesList = XLSX.utils.sheet_to_json(worksheet).map(function (row) {
+                    return {
+                        lat: parseFloat(row.Lat),
+                        lng: parseFloat(row.Lng),
+                        rodzajAtaku: row.Attack_type,
+                        column3: row.Place,
+                        column4: row.Position,
+                        column5: row.Date,
+                        column7: row.Attack_description
+                    };
+                });
+                drawPointsWithTooltips(coordinatesList);
+            };
+            xhr.send();
+        }
+
+        function drawPointsWithTooltips(coordinatesList) {
+            for (var i = 0; i < coordinatesList.length; i++) {
+                var coordinate = coordinatesList[i];
+                var lat = coordinate.lat;
+                var lng = coordinate.lng;
+                var rodzajAtaku = coordinate.rodzajAtaku;
+
+                var tooltipContent = "<br><b>Place of attack: </b>" + coordinate.column3;
+
+                // Dodaj dane z kolumn 3, 4 i 5 do tooltipu
+                tooltipContent += "<br><b>Position:</b> " + coordinate.column4;
+                tooltipContent += "<br><b>Date: </b> " + coordinate.column5;
+                tooltipContent += "<br><b>What happened?  </b> " + coordinate.column7;
+
+                var marker;
+                if (rodzajAtaku === 'boarded') {
+                    marker = L.marker([lat, lng], {
+                        icon: L.ExtraMarkers.icon({
+                            className: 'leaflet-div-icon',
+                            icon: 'fa-location',
+                            markerColor: 'yellow',
+                            shape: 'star',
+                            prefix: 'fa'
+                        })
+                    }).addTo(boardedLayer);
+                } else if (rodzajAtaku === 'hijacked') {
+                    marker = L.marker([lat, lng], {
+                        icon: L.ExtraMarkers.icon({
+                            className: 'leaflet-div-icon',
+                            icon: 'fa-location',
+                            markerColor: 'pink',
+                            shape: 'star',
+                            prefix: 'fa'
+                        })
+                    }).addTo(hijackedLayer);
+                } else if (rodzajAtaku === 'attempted') {
+                    marker = L.marker([lat, lng], {
+                        icon: L.ExtraMarkers.icon({
+                            className: 'leaflet-div-icon',
+                            icon: 'fa-location',
+                            markerColor: 'orange-dark',
+                            shape: 'star',
+                            prefix: 'fa'
+                        })
+                    }).addTo(attemptedLayer);
+                } else if (rodzajAtaku === 'fired upon') {
+                    marker = L.marker([lat, lng], {
+                        icon: L.ExtraMarkers.icon({
+                            className: 'leaflet-div-icon',
+                            icon: 'fa-location',
+                            markerColor: 'cyan',
+                            shape: 'star',
+                            prefix: 'fa'
+                        })
+                    }).addTo(firedUponLayer);
+                } 
+                        // Dodaj tooltip do markera
+                marker.bindTooltip(tooltipContent);
+            }
+        }
+
+        window.onload = function () {
+            loadExcelFile();
+        };
+    </script>
+</body>
+</html>
